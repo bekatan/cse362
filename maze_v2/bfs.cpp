@@ -4,7 +4,9 @@
 // Please write your name, your student ID, and your email address here.
 // Moreover, please describe the implementation of your functions here.
 // You will have to submit this file.
-//
+// Name: Bekatan Satyev
+// Student ID: 20182024
+// Email: bekatans@unist.ac.kr
 
 #include <iostream>
 #include <list>
@@ -60,21 +62,30 @@ public:
   }
 };
 
+struct TreeNode
+  {
+    Coordinate coordinate;
+    TreeNode *down;
+    TreeNode *up;
+    TreeNode *right;
+    TreeNode *left;
+    TreeNode *next;
+  };
 
 class BreadthFirstSearchAgent {
-
+  TreeNode *root;
+  TreeNode *current;
 public:
 
   BreadthFirstSearchAgent(int size_x, int size_y) {
-
-    // enter your code here
-
+    root->coordinate = Coordinate(0,0);
+    current = root;
   }
 
   optional<Coordinate> move(bool isExit, bool hasWallSouth, bool hasWallNorth, bool hasWallEast, bool hasWallWest) {
-
-    // enter your code here
- 
+    if (isExit){
+      return optional<Coordinate>();
+    }
   }
 
   list<Coordinate> getShortestPath() {
