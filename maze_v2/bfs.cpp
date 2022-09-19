@@ -12,6 +12,9 @@
 #include <list>
 #include <string>
 #include <cstdlib>
+#include <queue>
+#include <set>
+#include <stack>
 
 // ---------------------------------------------------------------------
 // Include the optional header with backward compatibility
@@ -60,40 +63,96 @@ public:
   bool operator!=(const Coordinate &rhs) const {
     return !(rhs == *this);
   }
+
+  bool operator<(const Coordinate &rhs) const {
+    return x < rhs.x && y < rhs.y;
+  }
 };
 
-struct TreeNode
+struct Node
   {
-    Coordinate coordinate;
-    TreeNode *down;
-    TreeNode *up;
-    TreeNode *right;
-    TreeNode *left;
-    TreeNode *next;
+    Coordinate *coordinate;
+    Node *parent;
+    Node *children[4];
+    Node(Node* parent, Coordinate* coordinate){
+      this->parent = parent;
+      this->coordinate = coordinate;
+    }
+    ~Node(){
+      delete coordinate;
+      for (Node* n: children){
+        delete n;
+      }
+    }
   };
 
 class BreadthFirstSearchAgent {
-  TreeNode *root;
-  TreeNode *current;
+  
+  Node *root;
+  Node *current;
+  queue<Node*> q;
+  set<string> visited;
+
 public:
 
   BreadthFirstSearchAgent(int size_x, int size_y) {
-    root->coordinate = Coordinate(0,0);
+    root = new Node(NULL, new Coordinate(0,0));
     current = root;
+    q.push(current);
+  }
+
+  ~BreadthFirstSearchAgent() {
+    delete root;
   }
 
   optional<Coordinate> move(bool isExit, bool hasWallSouth, bool hasWallNorth, bool hasWallEast, bool hasWallWest) {
     if (isExit){
-      return optional<Coordinate>();
+      return {};
     }
+    int x = current->coordinate->getX(), y = current->coordinate->getY(); 
+    visited.insert(to_string(x) + " " + to_string(y));
+    
+    Node *n;
+    if(!hasWallSouth && visited.count(to_string(x) + " " + to_string(y+1)) == 0){
+      n = new Node(current, new Coordinate(x,y+1));
+      current->children[0] = n;
+      q.push(n);
+    }
+
+    if(!hasWallNorth && visited.count(to_string(x) + " " + to_string(y-1)) == 0){
+      n = new Node(current, new Coordinate(x,y-1));
+      current->children[1] = n;
+      q.push(n);
+    }
+    if(!hasWallEast && visited.count(to_string(x+1) + " " + to_string(y)) == 0){
+      n = new Node(current, new Coordinate(x+1,y));
+      current->children[2] = n;
+      q.push(n);
+    }
+    if(!hasWallWest && visited.count(to_string(x-1) + " " + to_string(y)) == 0){
+      n = new Node(current, new Coordinate(x-1,y));
+      current->children[3] = n;
+      q.push(n);
+    }
+    
+    q.pop();
+    current = q.front();
+    return *current->coordinate;
   }
 
   list<Coordinate> getShortestPath() {
-
-    // enter your code here
-
+    list <Coordinate> path;
+    stack <Coordinate> backTrack;
+    while (current != NULL){
+      backTrack.push(*current->coordinate);
+      current = current->parent;
+    }
+    while(!backTrack.empty()){
+      path.push_back(backTrack.top());
+      backTrack.pop();
+    }
+    return path;
   }
-
 };
 
 
