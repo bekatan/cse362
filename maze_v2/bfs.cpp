@@ -65,7 +65,9 @@ public:
   }
 
   bool operator<(const Coordinate &rhs) const {
-    return x < rhs.x && y < rhs.y;
+    string lhsString = to_string(x) + " " + to_string(y);
+    string rhsString = to_string(rhs.x) + " " + to_string(rhs.y);
+    return lhsString < rhsString;
   }
 };
 
@@ -91,7 +93,7 @@ class BreadthFirstSearchAgent {
   Node *root;
   Node *current;
   queue<Node*> q;
-  set<string> visited;
+  set<Coordinate> visited;
 
 public:
 
@@ -99,6 +101,7 @@ public:
     root = new Node(NULL, new Coordinate(0,0));
     current = root;
     q.push(current);
+    visited.insert(Coordinate(0,0));
   }
 
   ~BreadthFirstSearchAgent() {
@@ -110,29 +113,32 @@ public:
       return {};
     }
     int x = current->coordinate->getX(), y = current->coordinate->getY(); 
-    visited.insert(to_string(x) + " " + to_string(y));
     
     Node *n;
-    if(!hasWallSouth && visited.count(to_string(x) + " " + to_string(y+1)) == 0){
+    if(!hasWallSouth && visited.find(Coordinate(x,y+1)) == visited.end()){
       n = new Node(current, new Coordinate(x,y+1));
       current->children[0] = n;
       q.push(n);
+      visited.insert(Coordinate(x,y+1));
     }
 
-    if(!hasWallNorth && visited.count(to_string(x) + " " + to_string(y-1)) == 0){
+    if(!hasWallNorth && visited.find(Coordinate(x,y-1)) == visited.end()){
       n = new Node(current, new Coordinate(x,y-1));
       current->children[1] = n;
       q.push(n);
+      visited.insert(Coordinate(x,y-1));
     }
-    if(!hasWallEast && visited.count(to_string(x+1) + " " + to_string(y)) == 0){
+    if(!hasWallEast && visited.find(Coordinate(x+1,y)) == visited.end()){
       n = new Node(current, new Coordinate(x+1,y));
       current->children[2] = n;
       q.push(n);
+      visited.insert(Coordinate(x+1,y));
     }
-    if(!hasWallWest && visited.count(to_string(x-1) + " " + to_string(y)) == 0){
+    if(!hasWallWest && visited.find(Coordinate(x-1,y)) == visited.end()){
       n = new Node(current, new Coordinate(x-1,y));
       current->children[3] = n;
       q.push(n);
+      visited.insert(Coordinate(x-1,y));
     }
     
     q.pop();
