@@ -71,22 +71,21 @@ public:
   }
 };
 
-struct Node
-  {
-    Coordinate *coordinate;
-    Node *parent;
-    Node *children[4];
-    Node(Node* parent, Coordinate* coordinate){
-      this->parent = parent;
-      this->coordinate = coordinate;
+struct Node {
+  Coordinate *coordinate;
+  Node *parent;
+  Node *children[4];
+  Node(Node* parent, Coordinate* coordinate){
+    this->parent = parent;
+    this->coordinate = coordinate;
+  }
+  ~Node(){
+    delete coordinate;
+    for (Node* n: children){
+      delete n;
     }
-    ~Node(){
-      delete coordinate;
-      for (Node* n: children){
-        delete n;
-      }
-    }
-  };
+  }
+};
 
 class BreadthFirstSearchAgent {
   
