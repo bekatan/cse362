@@ -10,6 +10,9 @@
 #include <list>
 #include <string>
 #include <cstdlib>
+#include <queue>
+#include <set>
+#include <stack>
 
 // ---------------------------------------------------------------------
 // Include the optional header with backward compatibility
@@ -58,31 +61,110 @@ public:
   bool operator!=(const Coordinate &rhs) const {
     return !(rhs == *this);
   }
+
+  bool operator<(const Coordinate &rhs) const {
+    string lhsString = to_string(x) + " " + to_string(y);
+    string rhsString = to_string(rhs.x) + " " + to_string(rhs.y);
+    return lhsString < rhsString;
+  }
+};
+
+struct Node {
+  Coordinate *coordinate;
+  Node *parent;
+  Node *children[4];
+  int generation;
+  Node(Node* parent, Coordinate* coordinate, int generation){
+    this->parent = parent;
+    this->coordinate = coordinate;
+    this->generation = generation;
+  }
+  ~Node(){
+    delete coordinate;
+    for (Node* n: children){
+      delete n;
+    }
+  }
 };
 
 
 class DepthFirstSearchAgent {
 
+  Node *root;
+  Node *current;
+  stack<Node*> nodes;
+  set<Coordinate> visited;
+  int generation;
 public:
 
   DepthFirstSearchAgent(int size_x, int size_y) {
+    root = new Node(NULL, new Coordinate(0,0), 0);
+    current = root;
+    nodes.push(current);
+    visited.insert(Coordinate(0,0));
+    generation = 0;
+  }
 
-    // enter your code here
-
+  ~DepthFirstSearchAgent() {
+    delete root;
   }
 
   optional<Coordinate> move(bool isExit, bool hasWallSouth, bool hasWallNorth, bool hasWallEast, bool hasWallWest) {
+    if (isExit){
+      return {};
+    }
+    
+    int x = current->coordinate->getX(), y = current->coordinate->getY(); 
+    generation++;    
+    nodes.pop();
+    Node *n;
+    if(!hasWallSouth && visited.find(Coordinate(x,y+1)) == visited.end()){
+      n = new Node(current, new Coordinate(x,y+1), generation);
+      current->children[0] = n;
+      nodes.push(n);
+      visited.insert(Coordinate(x,y+1));
+    }
 
-    // enter your code here
-
+    if(!hasWallNorth && visited.find(Coordinate(x,y-1)) == visited.end()){
+      n = new Node(current, new Coordinate(x,y-1), generation);
+      current->children[1] = n;
+      nodes.push(n);
+      visited.insert(Coordinate(x,y-1));
+    }
+    if(!hasWallEast && visited.find(Coordinate(x+1,y)) == visited.end()){
+      n = new Node(current, new Coordinate(x+1,y), generation);
+      current->children[2] = n;
+      nodes.push(n);
+      visited.insert(Coordinate(x+1,y));
+    }
+    if(!hasWallWest && visited.find(Coordinate(x-1,y)) == visited.end()){
+      n = new Node(current, new Coordinate(x-1,y), generation);
+      current->children[3] = n;
+      nodes.push(n);
+      visited.insert(Coordinate(x-1,y));
+    }
+    
+    current = nodes.top();
+    return *current->coordinate; 
   }
 
   list<Coordinate> getShortestPath() {
-
-    // enter your code here
-
+    
+    list <Coordinate> path;
+    stack <Coordinate> backTrack;
+    
+    while (current != NULL){
+      backTrack.push(*current->coordinate);
+      current = current->parent;
+    }
+    
+    while(!backTrack.empty()){
+      path.push_back(backTrack.top());
+      backTrack.pop();
+    }
+    
+    return path;
   }
-
 };
 
 int main(int argc, char *argv[]) {
