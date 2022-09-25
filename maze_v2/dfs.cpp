@@ -11,7 +11,7 @@
 #include <string>
 #include <cstdlib>
 #include <queue>
-#include <set>
+#include <map>
 #include <stack>
 
 // ---------------------------------------------------------------------
@@ -92,59 +92,98 @@ class DepthFirstSearchAgent {
 
   Node *root;
   Node *current;
-  stack<Node*> nodes;
-  set<Coordinate> visited;
+  Node *shortest;
+  stack<Node*> s;
+  map<Coordinate,int> visited;
+
   int generation;
+  int limits[10];
+  int limitIndex;
+
 public:
 
   DepthFirstSearchAgent(int size_x, int size_y) {
     root = new Node(NULL, new Coordinate(0,0), 0);
+    shortest = NULL;
     current = root;
-    nodes.push(current);
-    visited.insert(Coordinate(0,0));
-    generation = 0;
+    s.push(current);
+    visited[*current->coordinate] = current->generation;
+    
+    int sum = size_x + size_y;
+    for (int i = 0; i < 9; i++){
+      limits[i] = sum/5 * (i+1);
+    }
+    limits[9] = size_x * size_y;
+    limitIndex = 0;
   }
 
   ~DepthFirstSearchAgent() {
     delete root;
   }
 
-  optional<Coordinate> move(bool isExit, bool hasWallSouth, bool hasWallNorth, bool hasWallEast, bool hasWallWest) {
-    if (isExit){
-      return {};
-    }
-    
-    int x = current->coordinate->getX(), y = current->coordinate->getY(); 
-    generation++;    
-    nodes.pop();
-    Node *n;
-    if(!hasWallSouth && visited.find(Coordinate(x,y+1)) == visited.end()){
-      n = new Node(current, new Coordinate(x,y+1), generation);
-      current->children[0] = n;
-      nodes.push(n);
-      visited.insert(Coordinate(x,y+1));
+  void add(bool hasWall, Coordinate coordinate, int childOrder){
+    if (hasWall){
+      return;
     }
 
-    if(!hasWallNorth && visited.find(Coordinate(x,y-1)) == visited.end()){
-      n = new Node(current, new Coordinate(x,y-1), generation);
-      current->children[1] = n;
-      nodes.push(n);
-      visited.insert(Coordinate(x,y-1));
+    if (visited.find(coordinate) != visited.end() && visited[coordinate] < current->generation + 1){
+      return;
     }
-    if(!hasWallEast && visited.find(Coordinate(x+1,y)) == visited.end()){
-      n = new Node(current, new Coordinate(x+1,y), generation);
-      current->children[2] = n;
-      nodes.push(n);
-      visited.insert(Coordinate(x+1,y));
+
+    Node* n = new Node(current, new Coordinate(coordinate.getX(), coordinate.getY()), current->generation+1);
+    current->children[childOrder] = n;
+    s.push(n);
+    visited[*n->coordinate] = n->generation;
+  }
+
+  optional<Coordinate> move(bool isExit, bool hasWallSouth, bool hasWallNorth, bool hasWallEast, bool hasWallWest) {
+    
+    if (isExit){
+      if (shortest == NULL || shortest->generation > current->generation){
+        shortest = current;
+      }
     }
-    if(!hasWallWest && visited.find(Coordinate(x-1,y)) == visited.end()){
-      n = new Node(current, new Coordinate(x-1,y), generation);
-      current->children[3] = n;
-      nodes.push(n);
-      visited.insert(Coordinate(x-1,y));
+
+    visited[*current->coordinate] = current->generation;
+    
+    if(current->generation > limits[limitIndex]){
+      s.pop();
+      
+      if (s.empty()){
+        if (shortest != NULL){
+          return {};
+        } else {
+          limitIndex++;
+          s.push(root);
+        }
+      }
+
+      current = s.top();
+
+      return *current->coordinate;
     }
     
-    current = nodes.top();
+    int x = current->coordinate->getX(), y = current->coordinate->getY();
+    s.pop();
+    
+    if (shortest == NULL || shortest->generation > current->generation){
+      add(hasWallSouth, Coordinate(x, y + 1), 0);
+      add(hasWallNorth, Coordinate(x, y - 1), 1);
+      add(hasWallEast, Coordinate(x + 1, y), 2);
+      add(hasWallWest, Coordinate(x - 1, y), 3);
+    }
+
+    if (s.empty()){
+      if (shortest != NULL){
+        return {};
+      } else {
+        limitIndex++;
+        s.push(root);
+      }
+    } 
+
+    current = s.top();
+
     return *current->coordinate; 
   }
 
@@ -153,9 +192,9 @@ public:
     list <Coordinate> path;
     stack <Coordinate> backTrack;
     
-    while (current != NULL){
-      backTrack.push(*current->coordinate);
-      current = current->parent;
+    while (shortest != NULL){
+      backTrack.push(*shortest->coordinate);
+      shortest = shortest->parent;
     }
     
     while(!backTrack.empty()){
