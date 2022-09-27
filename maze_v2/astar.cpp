@@ -13,6 +13,7 @@
 #include <queue>
 #include <set>
 #include <stack>
+#include <map>
 
 // ---------------------------------------------------------------------
 // Include the optional header with backward compatibility
@@ -100,7 +101,7 @@ class AStarFirstSearchAgent {
 priority_queue<Node*, vector<Node*>, compareTraveled> fringe;
 Node* root;
 Node* current;
-set<Coordinate> visited;
+map<Coordinate, int> visited;
 int area;
 
 public:
@@ -109,7 +110,7 @@ public:
     area = size_x * size_y;
     root = new Node(NULL, new Coordinate(0, 0), 0);
     current = root;    
-    visited.insert(Coordinate(0,0));
+    visited[Coordinate(0,0)] = 0;
   }
 
   ~AStarFirstSearchAgent() {
@@ -121,14 +122,14 @@ public:
       return;
     }
 
-    if (visited.find(coordinate) != visited.end()){
+    if (visited.find(coordinate) != visited.end() && visited[coordinate] <= current->traveled + 1){
       return;
     }
 
     Node* n = new Node(current, new Coordinate(coordinate.getX(), 
                         coordinate.getY()), current->traveled+1);
     current->children.push_back(n);
-    visited.insert(*n->coordinate);
+    visited[*n->coordinate] = n->traveled;
   }
 
   optional<Coordinate> move(bool isExit, bool hasWallSouth, bool hasWallNorth, bool hasWallEast, bool hasWallWest, double distance) {
