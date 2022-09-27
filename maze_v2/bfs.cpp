@@ -8,6 +8,15 @@
 // Student ID: 20182024
 // Email: bekatans@unist.ac.kr
 
+/***
+ * Breadth First Search
+ *   - The problem of finding the Exit in a maze is converted to traversing a tree with a breadth first search approach. 
+ *   In this tree each node represents a point in the maze with properties such as Coordinate, pointers to the parent Node
+ *   and a container with pointers to children Nodes. The BreadFirstSearchAgent has properties such as pointer to the root 
+ *   its logarithmic insertion and access time. In order to implement iestthe orderet set of Coordinates, operator<(...) is 
+ *   overridden in Coordinates implementation.
+*/
+
 #include <iostream>
 #include <list>
 #include <string>
@@ -63,7 +72,7 @@ public:
   bool operator!=(const Coordinate &rhs) const {
     return !(rhs == *this);
   }
-
+  //for the ordered set of coordinates visited
   bool operator<(const Coordinate &rhs) const {
     string lhsString = to_string(x) + " " + to_string(y);
     string rhsString = to_string(rhs.x) + " " + to_string(rhs.y);
@@ -72,13 +81,10 @@ public:
 };
 
 struct Node {
-  Coordinate *coordinate;
   Node *parent;
-  Node *children[4];
-  Node(Node* parent, Coordinate* coordinate){
-    this->parent = parent;
-    this->coordinate = coordinate;
-  }
+  Coordinate *coordinate;
+  list<Node*> children;
+  Node(Node* parent, Coordinate* coordinate): parent(parent), coordinate(coordinate) {}
   ~Node(){
     delete coordinate;
     for (Node* n: children){
@@ -91,7 +97,7 @@ class BreadthFirstSearchAgent {
   
   Node *root;
   Node *current;
-  queue<Node*> q;
+  queue<Node*> fringe;
   set<Coordinate> visited;
 
 public:
@@ -99,62 +105,60 @@ public:
   BreadthFirstSearchAgent(int size_x, int size_y) {
     root = new Node(NULL, new Coordinate(0,0));
     current = root;
-    q.push(current);
+    fringe.push(current);
     visited.insert(Coordinate(0,0));
   }
 
   ~BreadthFirstSearchAgent() {
     delete root;
   }
+  //method to add new nodes into the fringe
+  void add(bool hasWall, Coordinate coordinate){
+    if (hasWall){
+      return;
+    }
+    //if visited, do not create a node
+    if (visited.find(coordinate) != visited.end()){
+      return;
+    }
 
+    Node* n = new Node(current, new Coordinate(coordinate.getX(), 
+                        coordinate.getY()));
+    current->children.push_back(n);
+    fringe.push(n);
+    visited.insert(coordinate);
+  }
+  /***
+   * In move(...) all new coordinates where the path can go are first checked if they are in the visited set, if not then 
+   * added to the array of current's children nodes (so we can delete them later), added to the queue of fringe nodes and 
+   * set of visited places. The FIFO policy of queues allows us to implement bfs, since all new child nodes are the first 
+   * ones to be accessed. When isExit is 1, we can be sure that the first path we found is the shortest one, because of bfs 
+   * approach.
+  */
   optional<Coordinate> move(bool isExit, bool hasWallSouth, bool hasWallNorth, bool hasWallEast, bool hasWallWest) {
     if (isExit){
       return {};
     }
     int x = current->coordinate->getX(), y = current->coordinate->getY(); 
     
-    Node *n;
-    if(!hasWallSouth && visited.find(Coordinate(x,y+1)) == visited.end()){
-      n = new Node(current, new Coordinate(x,y+1));
-      current->children[0] = n;
-      q.push(n);
-      visited.insert(Coordinate(x,y+1));
-    }
+    add(hasWallSouth, Coordinate(x, y + 1));
+    add(hasWallNorth, Coordinate(x, y - 1));
+    add(hasWallEast, Coordinate(x + 1, y));
+    add(hasWallWest, Coordinate(x - 1, y));
 
-    if(!hasWallNorth && visited.find(Coordinate(x,y-1)) == visited.end()){
-      n = new Node(current, new Coordinate(x,y-1));
-      current->children[1] = n;
-      q.push(n);
-      visited.insert(Coordinate(x,y-1));
-    }
-    if(!hasWallEast && visited.find(Coordinate(x+1,y)) == visited.end()){
-      n = new Node(current, new Coordinate(x+1,y));
-      current->children[2] = n;
-      q.push(n);
-      visited.insert(Coordinate(x+1,y));
-    }
-    if(!hasWallWest && visited.find(Coordinate(x-1,y)) == visited.end()){
-      n = new Node(current, new Coordinate(x-1,y));
-      current->children[3] = n;
-      q.push(n);
-      visited.insert(Coordinate(x-1,y));
-    }
-    
-    q.pop();
-    current = q.front();
+    fringe.pop();
+    current = fringe.front();
     return *current->coordinate;
   }
-
+  /***
+   * - In getShortestPath(...) since the current points to the exit we can trace back the shortest path to the root by 
+   * continuously referencing the parent pointer of the current.
+  */
   list<Coordinate> getShortestPath() {
     list <Coordinate> path;
-    stack <Coordinate> backTrack;
     while (current != NULL){
-      backTrack.push(*current->coordinate);
+      path.push_front(*current->coordinate);
       current = current->parent;
-    }
-    while(!backTrack.empty()){
-      path.push_back(backTrack.top());
-      backTrack.pop();
     }
     return path;
   }

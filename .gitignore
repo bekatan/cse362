@@ -1,9 +1,4 @@
-.vscode/c_cpp_properties.json
-.vscode/launch.json
-.vscode/settings.json
-.vscode/settings.json
-.vscode/settings.json
-.vscode/tasks.json
+.vscode/
 maze_v2/map.out
 maze_v2/provided/map.out
 maze_v2/bfs

@@ -4,14 +4,31 @@
 // Please write your name, your student ID, and your email address here.
 // Moreover, please describe the implementation of your functions here.
 // You will have to submit this file.
-//
+
+// Name: Bekatan Satyev
+// Student ID: 20182024
+// Email: bekatans@unist.ac.kr
+
+/***
+ * A Star First Search
+ *  -astar is implemented in a way similar to bfs. We have a queue of nodes, so we have a FIFO policy. However the queue 
+ * is ordered depending on the estimatedTotalDistance from the node to the goal. this estimated total distance is the sum 
+ * of traveled distance and estimated distance from this nodes coordinates. Because priority queue requires 
+ * estimatedTotalDistance to be calculated, child nodes are not pushed to the queue until they are visited. Insted the 
+ * coordinates of children of the node with lowest estimatedTotalDistance are returned from move(...). compareTraveled(...) 
+ * is utility method that is used in the priority queue to order nodes in the queue. One problem is that some path may not 
+ * be optimal even though it has lower estimated distance for some time compared to the actual optimal path, so similar to 
+ * the dfs implementation for each new node to be added it's coordinates are checked to be absent in the visited list or 
+ * it's traveled distance to be less than previous path's traveled distance to this coordinate. if isExit == 1, we can be 
+ * sure that we have found the shortest path.
+ * 
+*/
 
 #include <iostream>
 #include <list>
 #include <string>
 #include <cstdlib>
 #include <queue>
-#include <set>
 #include <stack>
 #include <map>
 
@@ -71,17 +88,13 @@ public:
 };
 
 struct Node {
-  Coordinate *coordinate;
   Node *parent;
+  Coordinate *coordinate;
   double traveled;
   list<Node*> children;
   double estimatedTotalDistance;
 
-  Node(Node* parent, Coordinate* coordinate, double traveled){
-    this->parent = parent;
-    this->coordinate = coordinate;
-    this->traveled = traveled;
-  }
+  Node(Node* parent, Coordinate* coordinate, double traveled): parent(parent), coordinate(coordinate), traveled(traveled) {}
   ~Node(){
     delete coordinate;
     for (Node* n: children){
@@ -89,7 +102,7 @@ struct Node {
     }
   }
 };
-
+//utility method that is used in the priority queue to order nodes in the queue
 struct compareTraveled{
   bool operator()(Node* lhs, Node *rhs){
       return lhs->estimatedTotalDistance > rhs->estimatedTotalDistance;
@@ -102,12 +115,10 @@ priority_queue<Node*, vector<Node*>, compareTraveled> fringe;
 Node* root;
 Node* current;
 map<Coordinate, int> visited;
-int area;
 
 public:
 
   AStarFirstSearchAgent(int size_x, int size_y) {
-    area = size_x * size_y;
     root = new Node(NULL, new Coordinate(0, 0), 0);
     current = root;    
     visited[Coordinate(0,0)] = 0;
@@ -117,6 +128,7 @@ public:
     delete root;
   }
 
+  //method to add new nodes into the fringe
   void add(bool hasWall, Coordinate coordinate, int childOrder){
     if (hasWall){
       return;
@@ -146,27 +158,28 @@ public:
     add(hasWallNorth, Coordinate(x, y - 1), 1);
     add(hasWallEast, Coordinate(x + 1, y), 2);
     add(hasWallWest, Coordinate(x - 1, y), 3);
+    
+    //if the most desirable node has no children, we don't need it in the fringe anymore 
     while(fringe.top()->children.empty()){
       fringe.pop();
     }
+
     current = fringe.top()->children.front();
-    
     fringe.top()->children.pop_front();
     
     return *current->coordinate;
   }
-
+  /***
+   * - In getShortestPath(...) since the current points to the exit we can trace back the shortest path to the root by 
+   * continuously referencing the parent pointer of the current.
+  */
   list<Coordinate> getShortestPath() {
   
     list <Coordinate> path;
-    stack <Coordinate> backTrack;
+    
     while (current != NULL){
-      backTrack.push(*current->coordinate);
+      path.push_front(*current->coordinate);
       current = current->parent;
-    }
-    while(!backTrack.empty()){
-      path.push_back(backTrack.top());
-      backTrack.pop();
     }
 
     return path;

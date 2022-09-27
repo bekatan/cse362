@@ -3,6 +3,22 @@
         "iostream": "cpp",
         "optional": "cpp",
         "ostream": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "random": "cpp",
+        "numeric": "cpp",
+        "bit": "cpp",
+        "cstdlib": "cpp",
+        "string": "cpp",
+        "exception": "cpp",
+        "memory_resource": "cpp",
+        "cmath": "cpp",
+        "functional": "cpp",
+        "istream": "cpp",
+        "new": "cpp",
+        "string_view": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "typeinfo": "cpp",
+        "utility": "cpp"
     }
 }
