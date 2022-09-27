@@ -73,7 +73,8 @@ struct Node {
   Coordinate *coordinate;
   Node *parent;
   double traveled;
-  Node *children[4];
+  list<Node*> children;
+  double estimatedTotalDistance;
 
   Node(Node* parent, Coordinate* coordinate, double traveled){
     this->parent = parent;
@@ -90,7 +91,7 @@ struct Node {
 
 struct compareTraveled{
   bool operator()(Node* lhs, Node *rhs){
-      return lhs->traveled > rhs->traveled;
+      return lhs->estimatedTotalDistance > rhs->estimatedTotalDistance;
   }  
 };
 
@@ -100,13 +101,14 @@ priority_queue<Node*, vector<Node*>, compareTraveled> fringe;
 Node* root;
 Node* current;
 set<Coordinate> visited;
+int area;
 
 public:
 
   AStarFirstSearchAgent(int size_x, int size_y) {
+    area = size_x * size_y;
     root = new Node(NULL, new Coordinate(0, 0), 0);
     current = root;    
-    fringe.push(current);
     visited.insert(Coordinate(0,0));
   }
 
@@ -123,9 +125,9 @@ public:
       return;
     }
 
-    Node* n = new Node(current, new Coordinate(coordinate.getX(), coordinate.getY()), current->traveled+1);
-    current->children[childOrder] = n;
-    fringe.push(n);
+    Node* n = new Node(current, new Coordinate(coordinate.getX(), 
+                        coordinate.getY()), current->traveled+1);
+    current->children.push_back(n);
     visited.insert(*n->coordinate);
   }
 
@@ -136,15 +138,20 @@ public:
     }
 
     int x = current->coordinate->getX(), y = current->coordinate->getY(); 
-    current->traveled += distance;
+    current->estimatedTotalDistance = current->traveled + distance;
+    fringe.push(current);
 
     add(hasWallSouth, Coordinate(x, y + 1), 0);
     add(hasWallNorth, Coordinate(x, y - 1), 1);
     add(hasWallEast, Coordinate(x + 1, y), 2);
     add(hasWallWest, Coordinate(x - 1, y), 3);
-
-    fringe.pop();
-    current = fringe.top();
+    while(fringe.top()->children.empty()){
+      fringe.pop();
+    }
+    current = fringe.top()->children.front();
+    
+    fringe.top()->children.pop_front();
+    
     return *current->coordinate;
   }
 
