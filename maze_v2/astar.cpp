@@ -10,6 +10,9 @@
 #include <list>
 #include <string>
 #include <cstdlib>
+#include <queue>
+#include <set>
+#include <stack>
 
 // ---------------------------------------------------------------------
 // Include the optional header with backward compatibility
@@ -58,29 +61,107 @@ public:
   bool operator!=(const Coordinate &rhs) const {
     return !(rhs == *this);
   }
+
+  bool operator<(const Coordinate &rhs) const {
+    string lhsString = to_string(x) + " " + to_string(y);
+    string rhsString = to_string(rhs.x) + " " + to_string(rhs.y);
+    return lhsString < rhsString;
+  }
 };
 
+struct Node {
+  Coordinate *coordinate;
+  Node *parent;
+  double traveled;
+  Node *children[4];
+
+  Node(Node* parent, Coordinate* coordinate, double traveled){
+    this->parent = parent;
+    this->coordinate = coordinate;
+    this->traveled = traveled;
+  }
+  ~Node(){
+    delete coordinate;
+    for (Node* n: children){
+      delete n;
+    }
+  }
+};
+
+struct compareTraveled{
+  bool operator()(Node* lhs, Node *rhs){
+      return lhs->traveled > rhs->traveled;
+  }  
+};
 
 class AStarFirstSearchAgent {
+
+priority_queue<Node*, vector<Node*>, compareTraveled> fringe;
+Node* root;
+Node* current;
+set<Coordinate> visited;
 
 public:
 
   AStarFirstSearchAgent(int size_x, int size_y) {
+    root = new Node(NULL, new Coordinate(0, 0), 0);
+    current = root;    
+    fringe.push(current);
+    visited.insert(Coordinate(0,0));
+  }
 
-    // enter your code here
+  ~AStarFirstSearchAgent() {
+    delete root;
+  }
 
+  void add(bool hasWall, Coordinate coordinate, int childOrder){
+    if (hasWall){
+      return;
+    }
+
+    if (visited.find(coordinate) != visited.end()){
+      return;
+    }
+
+    Node* n = new Node(current, new Coordinate(coordinate.getX(), coordinate.getY()), current->traveled+1);
+    current->children[childOrder] = n;
+    fringe.push(n);
+    visited.insert(*n->coordinate);
   }
 
   optional<Coordinate> move(bool isExit, bool hasWallSouth, bool hasWallNorth, bool hasWallEast, bool hasWallWest, double distance) {
-  
-    // enter your code here
+    
+    if (isExit){
+      return {};
+    }
 
+    int x = current->coordinate->getX(), y = current->coordinate->getY(); 
+    current->traveled += distance;
+
+    add(hasWallSouth, Coordinate(x, y + 1), 0);
+    add(hasWallNorth, Coordinate(x, y - 1), 1);
+    add(hasWallEast, Coordinate(x + 1, y), 2);
+    add(hasWallWest, Coordinate(x - 1, y), 3);
+
+    fringe.pop();
+    current = fringe.top();
+    return *current->coordinate;
   }
 
   list<Coordinate> getShortestPath() {
-    
-    // enter your code here
-    
+  
+    list <Coordinate> path;
+    stack <Coordinate> backTrack;
+    while (current != NULL){
+      backTrack.push(*current->coordinate);
+      current = current->parent;
+    }
+    while(!backTrack.empty()){
+      path.push_back(backTrack.top());
+      backTrack.pop();
+    }
+
+    return path;
   }
 
 };
