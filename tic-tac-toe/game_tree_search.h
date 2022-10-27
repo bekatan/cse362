@@ -1,7 +1,7 @@
 /*
- * Author: Your_Name
- * Student_ID: Your_Student_Id
- * Email: Your_Email_Address
+ * Author: Bekatan Satyev
+ * Student_ID: 20182024
+ * Email: bekatans@unist.ac.kr
  */
 
 #ifndef GAME_TREE_GAME_TREE_SEARCH_H
