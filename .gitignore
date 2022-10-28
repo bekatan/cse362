@@ -5,3 +5,5 @@ maze_v2/bfs
 maze_v2/map_sample.out
 maze_v2/mazegame.tar.gz
 maze_v2/dfs
+tic-tac-toe/game_tree
+.gitignore

@@ -9,21 +9,22 @@
 #include "game_spec.h"
 #include "game_tree_search.h"
 
-int computeCase(GameSpec spec, std::vector<int> field, bool turn){
+int computeCase(int size, std::vector<std::vector<int>> winseq, std::vector<int> field, bool turn, bool verbose = false){
     
     //check if anybody won
-    auto winseq = spec.getWinSeq();
-
-    for (auto seq : winseq){
-        int move = field[seq[0]];
+    // auto winseq = spec.getWinSeq();
+    
+    for (int i = 0; i < winseq.size(); i++){
+        int move = field[winseq[i][0]];
         bool win = true;
         if (move < 1){
             continue;
         }
 
-        for (int index : seq){
+        for (int index : winseq[i]){
             if (field[index] != move){
                 win = false;
+                winseq.erase(winseq.begin() + i);
                 break;
             }
         }
@@ -33,7 +34,11 @@ int computeCase(GameSpec spec, std::vector<int> field, bool turn){
         }
     }
 
-    //check if the field is full
+    //check if the game if over
+    if (winseq.empty()){
+        return 0;
+    }
+
     bool full = true;
     for (int i : field){
         if (i == 0){
@@ -50,12 +55,12 @@ int computeCase(GameSpec spec, std::vector<int> field, bool turn){
 
     int payoff = 1-2*turn, curPayoff;
 
-    for (int i = 0; i < spec.getSize(); i++){
+    for (int i = 0; i < size; i++){
         if (field[i] != 0){
             continue;
         }
         field[i] = 2-turn;
-        curPayoff = computeCase(spec, field, !turn);
+        curPayoff = computeCase(size, winseq, field, !turn);
         
         if (turn){
             if (curPayoff == 1){
@@ -86,7 +91,7 @@ int GameTree::computeGameTree(const GameSpec& spec) {
             field.push_back(0);
         }
     }
-    return computeCase(spec, field, true);
+    return computeCase(spec.getSize(), spec.getWinSeq() , field, true);
 }
 
 
