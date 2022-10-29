@@ -22,6 +22,9 @@ struct State{
   struct State* parent;
   std::vector<struct State*> children;
   int payoff;
+  int id;
+  int bestMove;
+  int bestMoveIndex;
   std::vector<int>field;
 };
 
