@@ -11,6 +11,19 @@
 
 #include "game_spec.h"
 
+struct State{
+  State() = default;
+  State(State* parent, int payoff, std::vector<int> field): parent(parent), payoff(payoff), field(field){}
+  ~State(){
+    for (auto child : children){
+      delete child;
+    }
+  }
+  struct State* parent;
+  std::vector<struct State*> children;
+  int payoff;
+  std::vector<int>field;
+};
 
 class GameTree {
 
