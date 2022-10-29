@@ -1,0 +1,39 @@
+/*
+ * Author: Bekatan Satyev
+ * Student_ID: 20182024
+ * Email: bekatans@unist.ac.kr
+ */
+
+ Struct State saves the current state of the playing field, best move, children states and index for the 
+ best move
+
+###MAX_SIZE: 4x3
+
+1. COMPUTE GAME TREE:
+    computing the game tree is implemented with a recursive function that reads in the initial state
+    with the playing the remaining winning sequences, field, field size, bool turn (True for 1st player and False for 2nd).
+
+    checks if any winning seq indexes in the field are occupied by the same player. If so return the 
+    desired payoff of the previous player.
+
+    check if the playing field is full
+
+    recursively call itself with each children states where the current can mark its move. if any of the children give 
+    the desired result return the current state with remaining children pruned by setting their payoff 
+    to 2.
+
+    return the current state
+
+    effectively the utility function returns the root of the game tree with min max values for payoff at each state
+
+2. Print Game tree
+
+    Call the aforementioned utility recursive function and using breadth first traversal of the tree print the sid, 
+    parent id, children id, payoff and field info
+    stored in the state struct.
+
+3. playAsFirstPlayer and playAsSecondPlayer
+    Call the recursive completeTree function that computes the whole tree and then based on the turn and the opponents move 
+    make the best move stored in the current state of the game.
+
+    

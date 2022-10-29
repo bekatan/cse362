@@ -371,7 +371,7 @@ void GameTree::playAsSecondPlayer(const GameSpec& spec) {
     int bestMove = 0;
     int opponentMove;
 
-    //read in the opponents move and depending do the best move from the computed tree
+    //read in the opponents move and do the best move from the computed tree
     while(!cur->children.empty()){
         std::cin>>opponentMove;
         for(State* child: cur->children){
